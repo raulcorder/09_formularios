@@ -72,18 +72,18 @@ const posts = [
 //   });
 // };
 
-const findPostById = (id) =>
-  new Promise((resolve, reject) => {
-    // setTimeOut es una simulación de una base de datos externa que se demora
-    setTimeout(() => {
-      const post = posts.find((item) => item.id === id);
-      if (post) {
-        resolve(post);
-      } else {
-        reject("no se encontró id " + id);
-      }
-    }, 2000);
-  });
+// const findPostById = (id) =>
+//   new Promise((resolve, reject) => {
+//     // setTimeOut es una simulación de una base de datos externa que se demora
+//     setTimeout(() => {
+//       const post = posts.find((item) => item.id === id);
+//       if (post) {
+//         resolve(post);
+//       } else {
+//         reject("no se encontró id " + id);
+//       }
+//     }, 2000);
+//   });
 
 // findPostById(3)
 //   .then((post) => {
@@ -91,24 +91,47 @@ const findPostById = (id) =>
 //   })
 //   .catch((e) => console.log(e));
 
-const buscar = async (id) => {
-  try {
-    // // Para varias pormesas utilizar promise.all
-    // const respost = await Promise.all([
-    //     findPostById(1),
-    //     findPostById(2)
-    // ])
-    // console.log(resPosts[0].title, resPosts[1].title);
+// const buscar = async (id) => {
+//   try {
+//     // // Para varias pormesas utilizar promise.all
+//     // const respost = await Promise.all([
+//     //     findPostById(1),
+//     //     findPostById(2)
+//     // ])
+//     // console.log(resPosts[0].title, resPosts[1].title);
 
-    const post = await findPostById(id);
+//     const post = await findPostById(id);
+//     console.log(post);
+//   } catch (error) {
+//     console.log(error);
+//   } finally {
+//     console.log("se ejecuta si o si");
+//   }
+// };
+
+// buscar(2);
+
+// console.log("fin del codigo");
+
+// const url = "https://jsonplaceholder.typicode.com/posts/1";
+
+// fetch(url)
+//   .then((res) => res.json())
+//   .then((data) => console.log(data))
+//   .catch((e) => console.log(e))
+//   .finally(() => console.log("Finalizó"));
+
+const url = "https://jsonplaceholder.typicode.com/posts/";
+
+const findPostById = async (id) => {
+  try {
+    const res = await fetch(url + id);
+    const post = await res.json();
+
     console.log(post);
   } catch (error) {
     console.log(error);
-  } finally {
-    console.log("se ejecuta si o si");
   }
 };
 
-buscar(2);
-
-console.log("fin del codigo");
+findPostById(50);
