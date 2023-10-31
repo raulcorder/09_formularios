@@ -37,6 +37,7 @@ const pintarCard = (data) => {
   cards.appendChild(fragment);
 };
 
+// Pintar el loading
 const loadingData = (estado) => {
   const loading = document.getElementById("loading");
   if (estado) {
