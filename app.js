@@ -1,87 +1,131 @@
-// // Función constructora = plantilla = Class
-// function Persona(nombre) {
-//   this.nombre = nombre;
-//   this.saludar = function () {
-//     return `${this.nombre} dice hola`; // revisar interpolación
-//   };
-//   // this.saludarIngles = function () {
-//   //   return `${this.nombre} says hi!`;
-//   // };
-// }
+const formulario = document.querySelector("#formulario");
+const cardsEstudiante = document.querySelector("#cardsEstudiante");
+const cardsProfesor = document.querySelector("#cardsProfesor");
+const templateEstudiante = document.querySelector(
+  "#templateEstudiante"
+).content;
+const templateProfesor = document.querySelector("#templateProfesor").content;
 
-// Persona.prototype.saludarIngles = function () {
-//   return `${this.nombre} says hi!`;
-// };
+const estudiantes = [];
+const profesores = [];
 
-// const juanito = new Persona("juanito");
-// const pedrito = new Persona("pedrito");
+document.addEventListener("click", (e) => {
+  console.log(e.target.dataset.nombre);
+  if (e.target.dataset.nombre) {
+    // console.log(e.target.matches(".btn-success"));
+    if (e.target.matches(".btn-success")) {
+      estudiantes.map((item) => {
+        if (item.nombre === e.target.dataset.nombre) {
+          item.setEstado = true;
+        }
+        console.log(item);
+        return item;
+      });
+    }
+    if (e.target.matches(".btn-danger")) {
+      estudiantes.map((item) => {
+        if (item.nombre === e.target.dataset.nombre) {
+          item.setEstado = false;
+        }
+        console.log(item);
+        return item;
+      });
+    }
+    Persona.pintarPersonaUI(estudiantes, "Estudiante");
+  }
+});
 
-// console.log(juanito);
-// // console.log(juanito.saludar());
-// // console.log(pedrito.saludar());
-// console.log(pedrito.saludarIngles());
-// console.log(pedrito);
-
-//mayuscula para funcion constructora
 class Persona {
   constructor(nombre, edad) {
     this.nombre = nombre;
     this.edad = edad;
   }
-  get getNombre() {
-    return this.nombre;
-  }
 
-  set setNombre(nombre) {
-    this.nombre = nombre;
-  }
+  static pintarPersonaUI(personas, tipo) {
+    if (tipo === "Estudiante") {
+      cardsEstudiantes.textContent = "";
+      const fragment = document.createDocumentFragment();
 
-  saludar() {
-    return `${this.nombre} dice hola`;
-  }
+      personas.forEach((item) => {
+        fragment.appendChild(item.agregarNuevoEstudiante());
+      });
 
-  //static no instancia lo hace directamente desde class
-  static probarSaludo(nombre) {
-    return `${nombre} probando saludo`;
+      cardsEstudiantes.appendChild(fragment);
+    }
+
+    if (tipo === "Profesor") {
+      cardsProfesores.textContent = "";
+      const fragment = document.createDocumentFragment();
+      personas.forEach((item) => {
+        fragment.appendChild(item.agregarNuevoProfesor());
+      });
+      cardsProfesores.appendChild(fragment);
+    }
   }
 }
 
-//extends añade propiedades a la primera clase
-// podemos sobreescribir a la class madre, tanto propiedades como métodos. "Polimorfismo"
 class Estudiante extends Persona {
-  //# para que no choque el código. No es seguro salvo en el back-end
-  #notas = [];
+  #estado = false;
+  #estudiante = "Estudiante";
 
-  // constructor(nombre, edad, notas = []) {
-  //   super(nombre, edad);
-  //   this.notas = notas;
-
-  set setNotas(nota) {
-    this.#notas.push(nota);
+  set setEstado(estado) {
+    this.#estado = estado;
   }
-
-  get getNotas() {
-    return this.#notas;
+  get getEstudiante() {
+    return this.#estudiante;
   }
+  agregarNuevoEstudiante() {
+    const clone = templateEstudiante.cloneNode(true);
+    clone.querySelector("h5 .text-primary").textContent = this.nombre;
+    clone.querySelector("h6").textContent = this.getEstudiante;
+    clone.querySelector(".lead").textContent = this.edad;
 
-  saludar() {
-    return `${this.nombre} desde estudiante`;
+    if (this.#estado) {
+      clone.querySelector(".badge").className = "badge bg-success";
+      clone.querySelector(".btn-success").disabled = true;
+      clone.querySelector(".btn-danger").disabled = false;
+    } else {
+      clone.querySelector(".badge").className = "badge bg-danger";
+      clone.querySelector(".btn-success").disabled = false;
+      clone.querySelector(".btn-danger").disabled = true;
+    }
+    clone.querySelector(".badge").textContent = this.#estado
+      ? "Aprobado"
+      : "Reprobado";
+
+    clone.querySelector(".btn-success").dataset.nombre = this.nombre;
+    clone.querySelector(".btn-danger").dataset.nombre = this.nombre;
+
+    return clone;
   }
 }
 
-const juanito = new Estudiante("juanito", 25);
+class Profesor extends Persona {
+  #profesor = "Profesor";
 
-//Los getter y los setter van sin paréntesis
-juanito.setNotas = 7;
-juanito.setNotas = 6;
-juanito.setNotas = 1;
+  agregarNuevoProfesor() {
+    const clone = templateProfesor.cloneNode(true);
+    clone.querySelector("h5").textContent = this.nombre;
+    clone.querySelector("h6").textContent = this.#profesor;
+    clone.querySelector(".lead").textContent = this.edad;
+    return clone;
+  }
+}
 
-console.log(juanito.getNotas);
+formulario.addEventListener("submit", (e) => {
+  e.preventDefault();
 
-// console.log(Persona.probarSaludo("Nacho"));
+  const datos = new FormData(formulario);
+  const [nombre, edad, opcion] = [...datos.values()]; //destructuring
 
-// const juanito = new Persona("juanito");
-// // juanito.nombre = "pedrito";
-// juanito.setNombre = "Pedrito";
-// console.log(juanito.getNombre);
-// console.log(juanito.saludar());
+  if (opcion === "Estudiante") {
+    const estudiante = new Estudiante(nombre, edad);
+    estudiantes.push(estudiante);
+    Persona.pintarPersonaUI(estudiantes, opcion);
+  }
+  if (opcion === "Profesor") {
+    const profesor = new Profesor(nombre, edad);
+    profesores.push(profesor);
+    Persona.pintarPersonaUI(profesores, opcion);
+  }
+});
