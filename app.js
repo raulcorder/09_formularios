@@ -1,140 +1,64 @@
-const formulario = document.querySelector("#formulario");
-const cardsEstudiante = document.querySelector("#cardsEstudiante");
-const cardsProfesor = document.querySelector("#cardsProfesor");
-const templateEstudiante = document.querySelector(
-  "#templateEstudiante"
-).content;
-const templateProfesor = document.querySelector("#templateProfesor").content;
 const alert = document.querySelector(".alert");
+const formulario = document.querySelector("#formulario");
+const pintarTodo = document.querySelector("#pintarTodo");
+const templateTodo = document.querySelector("#templateTodo").content;
 
-const estudiantes = [];
-const profesores = [];
+let todos = [];
+
+const agregarTodo = (todo) => {
+  const objetoTodo = {
+    nombre: todo,
+    id: `${Date.now()}`,
+  };
+  todos.push(objetoTodo);
+};
+
+const pintarTodos = () => {
+  //almacena en local storage como string OJO, no arrays
+  localStorage.setItem("todos", JSON.stringify(todos));
+
+  pintarTodo.textContent = "";
+  const fragment = document.createDocumentFragment();
+  todos.forEach((item) => {
+    const clone = templateTodo.cloneNode(true);
+    clone.querySelector(".lead").textContent = item.nombre;
+    clone.querySelector(".btn").dataset.id = item.id;
+
+    fragment.appendChild(clone);
+  });
+
+  pintarTodo.appendChild(fragment);
+};
 
 document.addEventListener("click", (e) => {
-  console.log(e.target.dataset.uid);
-  if (e.target.dataset.uid) {
-    // console.log(e.target.matches(".btn-success"));
-    if (e.target.matches(".btn-success")) {
-      estudiantes.map((item) => {
-        if (item.uid === e.target.dataset.uid) {
-          item.setEstado = true;
-        }
-        console.log(item);
-        return item;
-      });
-    }
-    if (e.target.matches(".btn-danger")) {
-      estudiantes.map((item) => {
-        if (item.uid === e.target.dataset.uid) {
-          item.setEstado = false;
-        }
-        console.log(item);
-        return item;
-      });
-    }
-    Persona.pintarPersonaUI(estudiantes, "Estudiante");
+  // console.log(e.target.dataset.id);
+  // console.log(e.target.matches(".btn-danger"));
+  if (e.target.matches(".btn-danger")) {
+    todos = todos.filter((item) => item.id !== e.target.dataset.id);
+    pintarTodos();
   }
 });
-
-class Persona {
-  constructor(nombre, edad) {
-    this.nombre = nombre;
-    this.edad = edad;
-    this.uid = `${Date.now()}`; //fecha en milisegundos para falsear un ID. Ojo en forEach que puede crearlos en la misma milésima
-  }
-
-  static pintarPersonaUI(personas, tipo) {
-    if (tipo === "Estudiante") {
-      cardsEstudiantes.textContent = "";
-      const fragment = document.createDocumentFragment();
-
-      personas.forEach((item) => {
-        fragment.appendChild(item.agregarNuevoEstudiante());
-      });
-
-      cardsEstudiantes.appendChild(fragment);
-    }
-
-    if (tipo === "Profesor") {
-      cardsProfesores.textContent = "";
-      const fragment = document.createDocumentFragment();
-      personas.forEach((item) => {
-        fragment.appendChild(item.agregarNuevoProfesor());
-      });
-      cardsProfesores.appendChild(fragment);
-    }
-  }
-}
-
-class Estudiante extends Persona {
-  #estado = false;
-  #estudiante = "Estudiante";
-
-  set setEstado(estado) {
-    this.#estado = estado;
-  }
-  get getEstudiante() {
-    return this.#estudiante;
-  }
-  agregarNuevoEstudiante() {
-    const clone = templateEstudiante.cloneNode(true);
-    clone.querySelector("h5 .text-primary").textContent = this.nombre;
-    clone.querySelector("h6").textContent = this.getEstudiante;
-    clone.querySelector(".lead").textContent = this.edad;
-
-    if (this.#estado) {
-      clone.querySelector(".badge").className = "badge bg-success";
-      clone.querySelector(".btn-success").disabled = true;
-      clone.querySelector(".btn-danger").disabled = false;
-    } else {
-      clone.querySelector(".badge").className = "badge bg-danger";
-      clone.querySelector(".btn-success").disabled = false;
-      clone.querySelector(".btn-danger").disabled = true;
-    }
-    clone.querySelector(".badge").textContent = this.#estado
-      ? "Aprobado"
-      : "Reprobado";
-
-    clone.querySelector(".btn-success").dataset.uid = this.uid;
-    clone.querySelector(".btn-danger").dataset.uid = this.uid;
-
-    return clone;
-  }
-}
-
-class Profesor extends Persona {
-  #profesor = "Profesor";
-
-  agregarNuevoProfesor() {
-    const clone = templateProfesor.cloneNode(true);
-    clone.querySelector("h5").textContent = this.nombre;
-    clone.querySelector("h6").textContent = this.#profesor;
-    clone.querySelector(".lead").textContent = this.edad;
-    return clone;
-  }
-}
 
 formulario.addEventListener("submit", (e) => {
   e.preventDefault();
   alert.classList.add("d-none");
 
-  const datos = new FormData(formulario);
-  const [nombre, edad, opcion] = [...datos.values()]; //destructuring
+  const data = new FormData(formulario);
+  const [todo] = [...data.values()]; //devuelve un array con los inputs del formulario "destructuring"
 
-  if (!nombre.trim() || !edad.trim() || !opcion.trim()) {
-    console.log("algun dato en blanco");
+  if (!todo.trim()) {
+    console.log("te equivocaste lo mandaste vacio");
     alert.classList.remove("d-none");
-
     return;
   }
-  if (opcion === "Estudiante") {
-    const estudiante = new Estudiante(nombre, edad);
-    estudiantes.push(estudiante);
-    Persona.pintarPersonaUI(estudiantes, opcion);
-  }
-  if (opcion === "Profesor") {
-    const profesor = new Profesor(nombre, edad);
-    profesores.push(profesor);
-    Persona.pintarPersonaUI(profesores, opcion);
+
+  agregarTodo(todo);
+  pintarTodos();
+});
+
+document.addEventListener("DOMContentLoaded", (e) => {
+  if (localStorage.getItem("todos")) {
+    todos = JSON.parse(localStorage.getItem("todos"));
+    pintarTodos();
   }
 });
